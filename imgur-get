@@ -1,0 +1,77 @@
+#!/usr/bin/env python
+
+import json
+import os
+import sys
+import time
+
+import requests
+
+def fetch_metadata(url):
+    metadata_url = url + '.json'
+    response = requests.get(metadata_url)
+
+    if response.status_code != 200:
+        return None
+
+    if not response.headers['content-type'].endswith('/json'):
+        return None
+
+    return json.loads(response.content)
+
+def fetch_image(metadata):
+    image = metadata['gallery']['image']
+    direct_image_url = 'http://i.imgur.com/%s%s' % ( image['hash'], image['ext'] )
+
+    response = requests.get(direct_image_url)
+
+    if response.status_code != 200:
+        return None
+
+    if not response.headers['content-type'].startswith('image/'):
+        return None
+
+    return response.content
+
+def main():
+    for url in sys.argv[1:]:
+        print "Processing url: %s" % url
+
+        metadata = fetch_metadata(url)
+        if metadata is None:
+            print "Error: Could not fetch metadata for imgur url, skipping: %s" % url
+            continue
+
+        image_data = fetch_image(metadata)
+        if image_data is None:
+            print "Error: Could not fetch image for imgur url, skipping: %s" % url
+            continue
+
+        metadata_filename = "%s.meta.json" % metadata['gallery']['image']['hash']
+        with open(metadata_filename, 'wb+') as fh:
+            json.dump(metadata, fh)
+
+        image_filename    = "%s%s" % (metadata['gallery']['image']['hash'], metadata['gallery']['image']['ext'])
+        with open(image_filename, 'wb+') as fh:
+            fh.write(image_data)
+
+        summary_dict = {
+            'title'  : metadata['gallery']['image']['title'],
+            'origurl': url,
+            'dl_date': time.strftime('%Y-%m-%d %H:%M:%S %z'),
+        }
+        summary = """\
+Image Title  : %(title)s
+Image URL    : %(origurl)s
+Download Date: %(dl_date)s
+""" % summary_dict
+
+        summary_filename = '%s.summary' % metadata['gallery']['image']['hash']
+        with open(summary_filename, 'wb+') as fh:
+            fh.write(summary)
+
+if __name__ == '__main__':
+    try:
+        main()
+    except KeyboardInterrupt:
+        sys.exit(">> User interrupt caught. Exiting.")
