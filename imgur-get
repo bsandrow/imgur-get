@@ -55,16 +55,11 @@ def main():
         with open(image_filename, 'wb+') as fh:
             fh.write(image_data)
 
-        summary_dict = {
-            'title'  : metadata['gallery']['image']['title'],
-            'origurl': url,
-            'dl_date': time.strftime('%Y-%m-%d %H:%M:%S %z'),
-        }
-        summary = """\
-Image Title  : %(title)s
-Image URL    : %(origurl)s
-Download Date: %(dl_date)s
-""" % summary_dict
+        summary = (
+              "Image Title  : %s\n" % metadata['gallery']['image']['title']
+            + "Image URL    : %s\n" % url
+            + "Download Date: %s\n" % time.strftime('%Y-%m-%d %H:%M:%S %z')
+        )
 
         summary_filename = '%s.summary' % metadata['gallery']['image']['hash']
         with open(summary_filename, 'wb+') as fh:
