@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import argparse
 import json
 import os
 import sys
@@ -33,8 +34,18 @@ def fetch_image(metadata):
 
     return response.content
 
+def parse_options():
+    parser = argparse.ArgumentParser(description="""Download an image from imgur.com + all of the metadata
+                                                  (comments, title, stats, etc).""")
+    parser.add_argument('urls', nargs='+', metavar='URL',
+                        help='An imgur.com gallary url (i.e. imgur.com/gallery/blah)')
+    options = parser.parse_args()
+    return options
+
 def main():
-    for url in sys.argv[1:]:
+    options = parse_options()
+
+    for url in options.urls:
         print "Processing url: %s" % url
 
         metadata = fetch_metadata(url)
