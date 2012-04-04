@@ -12,7 +12,7 @@ config = {
     'author_email' : 'brandon@sandrowicz.org',
     'version'      : '1.0',
     'packages'     : [],
-    'scripts'      : ['imgur-get'],
+    'scripts'      : [ 'imgur-get' ],
     'name'         : 'imgur-get',
 }
 
